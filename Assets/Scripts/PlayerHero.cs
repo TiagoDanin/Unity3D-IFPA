@@ -8,12 +8,16 @@ public class PlayerHero : MonoBehaviour {
 	private static readonly float LayerFlag = 7;
 	private static readonly float LayerSpikes = 8;
 
-	public float speedMove;
-	public float speedJump;
+	[SerializeField]
+	private float speedMove;
+	[SerializeField]
+	private float speedJump;
 
-	public string nextSceneName;
+	[SerializeField]
+	private string nextSceneName;
 
 	private bool isJumping;
+	private bool hasJump;
 	private bool hasDoubleJump;
 
 	private Rigidbody rigidBody;
@@ -27,13 +31,17 @@ public class PlayerHero : MonoBehaviour {
 		CheckKeyboard();
 	}
 
+	void FixedUpdate() {
+		MoveHorizontally();
+		JumpAction();
+	}
+
 	void CheckKeyboard() {
 		if (Input.GetButtonDown("Jump")) {
-			JumpAction();
+			isJumping = true;
 		}
 
 		horizontalAxis = Input.GetAxis("Horizontal");
-		MoveHorizontally();
 	}
 
 	void MoveHorizontally() {
@@ -41,19 +49,15 @@ public class PlayerHero : MonoBehaviour {
 	}
 
 	void JumpAction() {
-		if (!isJumping) {
+		if (isJumping && hasJump) {
+			Debug.Log("IsJump");
 			rigidBody.AddForce(Vector3.up * speedJump, ForceMode.Impulse);
 			hasDoubleJump = true;
-		} else if (hasDoubleJump) {
-			rigidBody.AddForce(Vector3.up * speedJump * 1f, ForceMode.Impulse);
+			hasJump = false;
+		} else if (isJumping && hasDoubleJump) {
+			Debug.Log("IsDoubleJump");
+			rigidBody.AddForce(Vector3.up * speedJump * 0.5f, ForceMode.Impulse);
 			hasDoubleJump = false;
-		}
-	}
-
-	void OnCollisionExit(Collision collision) {
-		if (collision.gameObject.layer == LayerGround) {
-			Debug.Log("IsJump");
-			isJumping = true;
 		}
 	}
 
@@ -62,6 +66,7 @@ public class PlayerHero : MonoBehaviour {
 			Debug.Log("NotIsJump");
 			isJumping = false;
 			hasDoubleJump = false;
+			hasJump = true;
 		}
 	}
 
